@@ -34,7 +34,9 @@ help(Boston)
 Faça um gráfico de dispersão entre `medv` e `rm`.
 
 ```{r}
-
+ggplot(Boston, mapping = aes(y = medv, x=rm))+
+  geom_point()+
+  theme_classic()
 ```
 
 ## Exercício 2
@@ -42,7 +44,8 @@ Faça um gráfico de dispersão entre `medv` e `rm`.
 Ajuste um modelo de regressão linear simples utilizando `medv` como resposta e `rm` como explicativa e guarde em objeto chamado `mod_simples`. Consulte o `summary(mod_simples)` em seguida.
 
 ```{r}
-
+mod_simples <- lm (medv ~ rm, Boston) 
+summary(mod_simples)
 ```
 
 ## Exercício 3
@@ -50,10 +53,14 @@ Ajuste um modelo de regressão linear simples utilizando `medv` como resposta e 
 Sabendo que `medv` é o preço mediano das habitações do bairro e o `rm` é o número médio de quartos por habitação, 
 
 a) interprete o parâmetro `(Intercept)`.
-
+Redução de 34.6 mil no preço da casa, caso o numero de quartos (rm) seja zera
+    
 b) interprete o parâmetro `rm`.
+Quando o número médio de quartos por habitação for zero, o preço será de 
+O aumento no número de quarto em 1 unidade eleva o preço em aproximadademente $9 mil.
 
 c) o número de quartos está associado com o valor da habitação? Por quê?
+O número de quarto por habitação (rm) explica 48% da variação no preço das habitações. 
 
 
 ## Exercício 4
@@ -67,7 +74,12 @@ Consulte as saídas das funções
 - `augment(mod_simples)`
 
 ```{r}
-
+coef(mod_simples)           # coeficientes
+    confint(mod_simples)    # intervalo confianca
+    predict(mod_simples)    # valores preditos
+    predict(mod_simples, interval = "confidence") # valores preditos c/ intervalos
+    boom::augment(mod_simples)    # resíduos|cook distance|erro padrão|intervalos de confiança
+    
 ```
 
 ## Exercício 5
@@ -75,7 +87,11 @@ Consulte as saídas das funções
 Usando o data.frame gerado por `augment(mod_simples)` faça um gráfico de `medv` versus `rm` e em seguida desenhe a reta ajustada do `mod_simples`.
 
 ```{r}
-
+res <-  augment(mod_simples)
+ggplot(Boston, mapping = aes(y = medv, x=rm))+
+      geom_point()+
+      geom_line(res, mapping = aes(y =.fitted , x=rm))+
+      theme_classic()
 ```
 
 ## Exercício 6
@@ -83,7 +99,9 @@ Usando o data.frame gerado por `augment(mod_simples)` faça um gráfico de `medv
 Faça um gráfico de resíduos. Coloque os **resíduos** no eixo Y e os **valores ajustados** no eixo X.
 
 ```{r}
-
+ggplot(res, mapping = aes(y =.resid, x=.fitted))+
+     geom_point()+
+     theme_classic()
 ```
 
 
@@ -96,6 +114,7 @@ plot(mod_simples)
 ```
 
 Apenas pela inspeção visual, responda: existem outliers? Eles são pontos de alavanca?
+Sim. Três pontos outlier. Dos quais dois estão nas extrmidades, podendo funcionar como ponto de alavanca
 
 
 ## Exercício 8
@@ -103,6 +122,8 @@ Apenas pela inspeção visual, responda: existem outliers? Eles são pontos de a
 Ajuste um modelo `mod_multiplo` para `medv` explicado por `rm` e `crim`. Consulte o `summary(mod_multiplo)` em seguida.
 
 ```{r}
+mod_multiplo <- arm::standardize(lm (medv ~ rm +crim, Boston), standardize.y = TRUE)
+summary(mod_multiplo)
 
 ```
 
@@ -110,7 +131,9 @@ Ajuste um modelo `mod_multiplo` para `medv` explicado por `rm` e `crim`. Consult
 ## Exercício 9
 
 Qual modelo ficou melhor: `mod_simples` ou `mod_multiplo`? Qual critério você utilizou para decidir o melhor?
-
+No modelo multiplo. Pois possui maior valor de R-ajustado, o que significa que
+este modelo multiplo explica mais variação na variável resposta, do que o modelo
+simples.
 
 ## Exercício 10
 
