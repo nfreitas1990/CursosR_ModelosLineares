@@ -37,18 +37,16 @@ help(Boston)
 
 # 1. Analise Descritivas -----------------------------------------------------
 
-      # a. natureza das variáveis
-      # b. colinearidade entre variáveis
-      # c. verificar se as variáveis são lineares
+      # a. Avaliar natureza das variáveis
+      # b. Avaliar colinearidade entre variáveis
+      # c. verificar linearidade
       
       
 
 # a. Natureza das variáveis
   # Disponibilidade de 14 variáveis, com 506 observações
   str(Boston)
-  total <- n_distinct(Boston)
   
-
   # Ajuste: variaveis categoricas
   Boston <- Boston |> 
     mutate(chas= as.factor(chas),
@@ -56,22 +54,46 @@ help(Boston)
   
   summary(Boston)
 
+  
 
+# b. Avaliar a colinearidade das variáveis 
+# DUVIDA: Incluo a variável resposta na correlação?
+# DUVIDA: Como seleciono?
 
-# b. Avaliar a colinearidade das variáveis - Nao está funcionando!
-dados_cor <- Boston  |> 
-  dplyr::select (where(is.numeric)) 
-
-
-
+  # Teste de correlação entre variáveis 
+  # Escolha do método spearman foi para não assumir pressuposto de normalidade
+  # que ia requerer para usar pearson.
+  dados_cor <- Boston  |> 
+                dplyr::select (where(is.numeric)) 
+  
+  corrplot(cor(dados_cor, method = "spearman"), method="number")
+  
+  
+ # Conclusão da correlação (>0.7)
+  
+  # crim: indus | nox | age | dis | tax     (seleciono)
+  # zn: -                                   (seleciono)
+  # indus: crim | nox | dis                            
+  # nox: crim | indus | age | dis                      
+  # rm: -                                   (seleciono)
+  # age: crim | nox | dis                              
+  # dis: crim | indus | nox | age                      
+  # tax: crim                                          
+  # Istat: -                                (seleciono)
+  
 
 # c. verificar se as variáveis são lineares
+  
+  # Opção 1 - simplificada
+  plot(medv ~ . , data=Boston)
+
+  # Opção 2
   graficos <- Boston|> 
               dplyr::select (where(is.numeric)) |>
                 map( ~ {ggplot(Boston, aes(y = medv, x = .))+ geom_point()})
   
   
-  # Olhar a var. resposta vs var. explciativas,individualmente
+  # Olhar a var. resposta vs var. explicativas,individualmente
   # Var. resposta > medv - preço mediano das habitações do bairro
   
     graficos$crim   # taxa de crime percapita por cidade

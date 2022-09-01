@@ -1,5 +1,5 @@
 ---
-title: "Exercícios da Aula - Parte 1"
+title: "Análise preditiva dos Preços de Habitações em Boston"
 author: "Natália Freitas"
 date: "`r Sys.Date()`"
 output:
