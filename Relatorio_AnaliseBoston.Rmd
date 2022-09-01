@@ -1,0 +1,167 @@
+---
+title: "Exercícios da Aula - Parte 1"
+author: "Natália Freitas"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r include = F}
+## Pacotes usados
+
+library(tidyverse) # manipulacao de data.frame
+library(MASS) # dados Boston
+library(broom)
+```
+
+# Contextualização
+
+```{r include = F}
+total <- n_distinct(Boston)
+
+```
+
+O banco de dados **Boston** apresenta preços medianos das casas de `r total` bairros de Boston. Este banco de dados será utilizado para a realização dos exercícios propostos no Curso de Modelos Lineares da Cursos-R.
+
+# Objetivo
+
+Com intuito de realizar uma análise preditiva dos preços das residencias em Boston. Utilizaremos as 13 variáveis disponíveis no banco de dados para verificar a relação e influencia destas no preço das residencias. E, posteriormente, para a construção do modelo preditivo.
+
+# Exercício 1
+
+Faça um gráfico de dispersão entre \`medv\` e \`rm\`.
+
+```{r}
+
+ggplot(Boston, mapping = aes(y = medv, x=rm))+
+  geom_point()+
+  theme_classic()
+```
+
+# Exercício 2
+
+Ajuste um modelo de regressão linear simples utilizando \`medv\` como resposta e \`rm\` como explicativa e guarde em objeto chamado \`mod_simples\`. Consulte o \`summary(mod_simples)\` em seguida.
+
+```{r}
+mod_simples <- lm (medv ~ rm, Boston) 
+summary(mod_simples)
+
+```
+
+# Exercício 3
+
+Sabendo que \`medv\` é o preço mediano das habitações do bairro e o \`rm\` é o número médio de quartos por habitação,
+
+## a) interprete o parâmetro \`(Intercept)\`.
+
+O valor do intercepto tem importância no contexto matemático, mas pouca utilidade para a interpretação do problema. Neste caso, podemos inferir que quando o número de quartos (rm) for igual a zero, podemos esperar uma redução de \$34.7 mil no preço da casa, caso
+
+## b) interprete o parâmetro \`rm\`.
+
+O aumento no número de quarto em 1 unidade eleva o preço em aproximadademente \$9 mil no preço das habitações.
+
+## c) o número de quartos está associado com o valor da habitação? Por quê?
+
+Sim. O número de quarto por habitação (rm) explica aproximadamente 48% da variação no preço das habitações. Embora o percentual de explicação não seja muito alto, o p valor foi menor do que 0.05 o que indica que podemos rejeitar a hipótese nula (de que **não** existe associação entre as variáveis resposta e explicativa).
+
+## Exercício 4
+
+Consulte as saídas das funções
+
+\- `coef(mod_simples)`
+
+\- `confint(mod_simples)`
+
+\- `predict(mod_simples)`
+
+\- `predict(mod_simples, interval = "confidence")`
+
+\- `augment(mod_simples)`
+
+```{r}
+coef(mod_simples)           # coeficientes
+confint(mod_simples)    # intervalo confianca
+predict(mod_simples)    # valores preditos
+predict(mod_simples, interval = "confidence") # valores preditos c/ intervalos
+boom::augment(mod_simples)    # resíduos|cook distance|erro padrão|intervalos de confiança
+```
+
+## Exercício 5
+
+Usando o data.frame gerado por `augment(mod_simples)` faça um gráfico de `medv` versus `rm` e em seguida desenhe a reta ajustada do \`mod_simples\`.
+
+```{r}
+res <-  augment(mod_simples)
+ggplot(Boston, mapping = aes(y = medv, x=rm))+
+      geom_point()+
+      geom_line(res, mapping = aes(y =.fitted , x=rm))+
+      theme_classic()
+```
+
+## Exercício 6
+
+Faça um gráfico de resíduos. Coloque os **resíduos** no eixo Y e os **valores ajustados** no eixo X.
+
+```{r}
+ggplot(res, mapping = aes(y =.resid, x=.fitted))+
+     geom_point()+
+     theme_classic()
+
+```
+
+## Exercício 7
+
+Observe os gráficos de `plot(mod_simples)`.
+
+Apenas pela inspeção visual, responda: existem outliers? Eles são pontos de alavanca?
+
+É possível observar alguns pontos outliers. Através do gráfico da distância de Cook, observa-se alguns pontos se destacando como outlier e como possíveis pontos de alavanca, embora não estejam ultrapassando a linha limite de 0.5.
+
+```{r}
+plot(mod_simples)
+```
+
+## Exercício 8
+
+Ajuste um modelo `mod_multiplo` para `medv` explicado por `rm` e `crim`. Consulte o `summary(mod_multiplo)` em seguida.
+
+```{r}
+mod_multiplo <- lm (medv ~ rm +crim, Boston)
+summary(mod_multiplo)
+
+
+```
+
+```{r}
+# Neste modelo podemos comparar a importancia de cada variável comparativamente devido a padronização. Esse modelo faz sentido? Pode ser usado?
+
+mod_mulitplo_padron <- arm::standardize(lm(medv ~ rm +crim, Boston), standardize.y = TRUE)
+summary(mod_mulitplo_padron)
+```
+
+## Exercício 9
+
+Qual modelo ficou melhor: `mod_simples` ou `mod_multiplo`? Qual critério você utilizou para decidir o melhor?
+
+O modelo multiplo teve melhor desempenho do que o simples quando usamos o R-ajustado para compará-los. Maior valor de R-ajustado no modelo múltiplo, significa que este modelo explica mais variação na variável resposta, do que o modelo simples.
+
+## Exercício 10
+
+Ajuste um modelo `mod_completo` para `medv` explicado por todas as demais colunas. DICA: na fórmula `medv ~ .`, o ponto significa "todas as variáveis, tirando medv".
+
+```{r}
+mod_completo <- lm(medv ~., data = Boston)
+summary(mod_completo)
+```
+
+a) Consulte o `summary(mod_completo)` em seguida.
+
+b) Qual modelo ficou melhor: `mod_simples`, `mod_multiplo` ou `mod_completo`?
+
+Embora o modelo completo não esteja adequado, porque algumas variáveis devem ser transformadas e o modelo melhor ajustado, para a finalidade do exercício, podemos concluir, com base no R²-ajustado, que o modelo completo é o melhor.
+
+c) O valor estimado para o termo `rm` variou entre os três modelos? Por qual razão você acha que isso aconteceu?
+
+Sim, houve variação. Acho que isso pode ter ocorrido porque parte da variação que era explicada por `rm` pode ter sido explicada por outra variável que foi adicionada, fazendo com que `rm`explicasse uma parte menor da variação na variável resposta.

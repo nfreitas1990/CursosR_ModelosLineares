@@ -7,9 +7,10 @@
 library(tidyverse) 
 library(broom)
 library(purrr)
+library(dplyr)
 
 # Dados -------------------------------------------------------------------
-library(MASS)
+library(MASS)  # cuidado pq o select() existe no MASS e no dplyr, acaba dando conflito
 glimpse(Boston)
 view(Boston)
 #   Descriçao das variáves
@@ -37,14 +38,17 @@ help(Boston)
 # 1. Analise Descritivas -----------------------------------------------------
 
       # a. natureza das variáveis
-      # b. analise gráfica
+      # b. colinearidade entre variáveis
+      # c. verificar se as variáveis são lineares
       
       
 
 # a. Natureza das variáveis
   # Disponibilidade de 14 variáveis, com 506 observações
   str(Boston)
+  total <- n_distinct(Boston)
   
+
   # Ajuste: variaveis categoricas
   Boston <- Boston |> 
     mutate(chas= as.factor(chas),
@@ -54,9 +58,16 @@ help(Boston)
 
 
 
-# b. Analise gráfica
+# b. Avaliar a colinearidade das variáveis - Nao está funcionando!
+dados_cor <- Boston  |> 
+  dplyr::select (where(is.numeric)) 
 
+
+
+
+# c. verificar se as variáveis são lineares
   graficos <- Boston|> 
+              dplyr::select (where(is.numeric)) |>
                 map( ~ {ggplot(Boston, aes(y = medv, x = .))+ geom_point()})
   
   
@@ -144,7 +155,7 @@ help(Boston)
     
    # b. Regressão Multipla
    
-   # In
+   
    
    
       

@@ -1,13 +1,13 @@
 ---
 title: "Exercício - Regressão Linear Simples e Múltipla"
-author: "Seu Nome Aqui"
+author: "Natália Freitas"
 date: `r Sys.Date()`
 output: html_document
 ---
 
 ## Pacotes
 
-```{r}
+```{r include=FALSE}
 library(tidyverse) # manipulacao de data.frame
 library(MASS) # dados Boston
 library(broom)
