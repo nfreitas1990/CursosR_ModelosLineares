@@ -8,6 +8,7 @@ library(tidyverse)
 library(broom)
 library(purrr)
 library(dplyr)
+library(corrplot)
 
 # Dados -------------------------------------------------------------------
 library(MASS)  # cuidado pq o select() existe no MASS e no dplyr, acaba dando conflito
@@ -52,7 +53,7 @@ help(Boston)
     mutate(chas= as.factor(chas),
            rad = as.factor(rad))
   
-  summary(Boston)
+    summary(Boston)
 
   
 
@@ -82,21 +83,73 @@ help(Boston)
   # Istat: -                                (seleciono)
   
 
+# Conclusão: indus | nox | crim | dis estão relacionados.
+# DUVIDA: Seria melhor descartar alguma dessas variáveis, 
+# ou seria melhor redimensionar através de uma PCA e conseguir
+# e usar os eixos significativos da PCA?
+  
+  
 # c. verificar se as variáveis são lineares
   
   # Opção 1 - simplificada
+  par(mfrow = c (2,2))
   plot(medv ~ . , data=Boston)
 
+  
+  # Verificar transformações
+ 
+  #crim 
+  modelo <- lm (medv ~ log(crim), Boston)
+  MASS::boxcox (modelo)
+  par(mfrow = c (2,2))
+  plot(modelo)
+  
+  #indus
+  modelo <- lm (medv ~ log(indus), Boston)
+  MASS::boxcox (modelo)
+  par(mfrow = c (2,2))
+  plot(modelo)
+  
+  #nox
+  modelo <- lm (medv ~ log(nox), Boston)
+  MASS::boxcox (modelo)
+  par(mfrow = c (2,2))
+  plot(modelo)
+
+  
+  #rm
+  modelo <- lm (medv ~ age, Boston)
+  MASS::boxcox (modelo)
+  par(mfrow = c (2,2))
+  plot(modelo)
+  plot(medv ~ log(age), Boston)
+  
+  
+  
+  Boston |> 
+    
+    dplyr::select (where(is.numeric)) |>
+           mutate(logcrim = log(crim),
+                  logindus = log(indus),
+                  lognox = log(nox))
+  
+  
   # Opção 2
   graficos <- Boston|> 
               dplyr::select (where(is.numeric)) |>
+              mutate(logcrim = log(crim),
+                     )  |>   
                 map( ~ {ggplot(Boston, aes(y = medv, x = .))+ geom_point()})
+  
+  
+  
+  
   
   
   # Olhar a var. resposta vs var. explicativas,individualmente
   # Var. resposta > medv - preço mediano das habitações do bairro
   
-    graficos$crim   # taxa de crime percapita por cidade
+    graficos$logcrim   # taxa de crime percapita por cidade
     graficos$zn     # proporção de terrenos residenciais zoneados
     graficos$indus  # proporção de acres de negócios não varejistas por cidade
     graficos$nox    # concentração de óxidos de nitrogênio (partes por 10 milhões)
