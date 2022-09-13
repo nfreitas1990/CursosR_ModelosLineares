@@ -1,0 +1,137 @@
+---
+title: "Eficiência Veicular"
+author: "Document Author"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: pretty
+    highlight: github
+---
+
+# Como buscar por um carro econômico?
+
+O consumo de combustível é sempre uma preocupação para os motoristas. A cada ano, 
+a indústria automobilística traz atualizações visuais, introduz melhorias na 
+carroceria e mecânica dos automóveis, mas sempre contrabalanceando tais melhorias com 
+o consumo de combustível.
+
+Alguns fatores contribuem para o aumento do consumo de combustíveis, diminuindo a
+eficiência veicular. 
+
+# Base de Dados
+
+A base de dados `mtcars` foi utilizada para avaliar as características responsáveis
+pela eficiência veicular no que se refere ao consumo de combustível. 
+
+Os dados que compõem essa base foram extraídos da revista Motor Trend US de 1974.
+Abrangem o consumo de combustível e 10 aspectos do design e desempenho de 32 automóveis
+(modelos de 1973 a 1974).
+
+
+# Objetivo
+A análise objetiva selecionar as características mais relevantes para predizer a 
+eficiencia veicular no que se refere ao consumo de combustível.
+
+
+# Análise Descritiva
+
+```{r include=FALSE}
+# Carregamento de Pacotes
+library(dplyr)
+library(tidyverse)
+library(corrplot)
+
+```
+
+```{r include=FALSE}
+# Carregamento dos Dados
+data("mtcars")
+Tabela <- data.frame(Siglas = colnames(mtcars), Significado = c("Consumo Milhas/galão","Número de cilindros",
+                                                                "Deslocamento","Potência bruta",
+                                                                "Relação do eixo traseiro", 
+                                                                "Peso (1000 libras)",
+                                                                "Tempo de 1/4 de milha",
+                                                                "Motor (0|FormaV; 1|Reto",
+                                                                "Transmissão (0|Automática, 1|Manual)",
+                                                                "Número de marchas",
+                                                                "Número de carburadores"))
+
+```
+
+
+```{r}
+Tabela |> 
+  knitr::kable()
+```
+Avaliamos, ainda, a existencia dados faltantes. Como nenhum dado faltante 
+foi identificado seguimos com a análise.
+```{r}
+table(map(mtcars, is.na)) |> 
+  knitr::kable()
+skimr::skim(mtcars)
+```
+
+
+### Após uma análise inicial para conhecer os dados, três aspectos foram avaliados em seguida:
+### i. Natureza das variáveis;
+### ii. Colinearidade; 
+### iii. Linearidade.
+
+
+## i. Avaliação da natureza das variáveis
+As variáveis foram avaliadas e transformadas para que atendessem a natureza
+de cada uma. Ou seja, as Variáveis categóricas e interiras foram identificadas 
+e transformadas na classe adequada.
+
+```{r}
+mtcars <- mtcars |> 
+            mutate(vs = as.factor(vs),
+                   am = as.factor(am),
+                   cyl = as.integer(cyl),
+                   gear = as.integer(gear),
+                   carb = as.integer(carb))
+```
+
+## ii. Colinearidade
+Após transformar as varáveis para que atendessem a natureza de cada uma. Foi 
+avaliado a colinearidade entre elas. As variáveis `cyl`|`disp`|`hp`|`wt` se 
+mostraram correlacionadas. Conforme demonstrado abaixo:
+```{r}
+dados_cor <- mtcars  |> 
+              select (where(is.numeric))
+
+corrplot.mixed(cor(dados_cor, method = "spearman"),lower = "number", upper = 'color')
+```
+
+# iii. Linearidade 
+
+A inspeção visual das variáveis indicou a necessidade de transformação para 
+atender ao pressuposto de linearidade.  
+```{r fig.width=6, fig.height=10, fig.align='center'}
+  par(mfrow = c (5,2))    
+  plot(mpg ~ . , data = mtcars, pch= 16)
+```
+
+As variáveis `disp`, `hp`e `wt`, que visualmente não parecem lineares, 
+foram submetidas ao método Box-Cox, para ajudar na indicação do 
+tipo de de transformação que melhor se adequaria para atender a linearidade.
+
+```{r fig.width=3.5, fig.height=6, fig.align='center'}
+  # Junção dos gráficos
+  par(mfrow = c (3,1))
+  
+  # disp - transformar para log()
+  modelo_disp <- lm (mpg ~ disp, mtcars)
+  MASS::boxcox (modelo_disp)
+  
+  # hp - transformar log
+  modelo_hp <- lm (mpg ~ hp, mtcars)
+  MASS::boxcox (modelo_hp)
+  
+  # wt
+  modelo_wt <- lm (mpg ~ wt, mtcars)
+  MASS::boxcox (modelo_wt)
+```
+Após a avaliação, 
+
+### Vamos descobrir quais características te fazem ficar amigo do frentista mais rápido?

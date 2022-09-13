@@ -36,6 +36,7 @@ str(mtcars)
 names(mtcars)
 summary(mtcars)
 ?mtcars
+skimr::skim(mtcars)
 
 Tabela <- data.frame(Siglas = colnames(mtcars), Significado = c("Consumo Milhas/galão","Número de cilindros",
                                                                 "Deslocamento","Potência bruta",
@@ -46,6 +47,10 @@ Tabela <- data.frame(Siglas = colnames(mtcars), Significado = c("Consumo Milhas/
                                                                 "Transmissão (0|Automática, 1|Manual)",
                                                                 "Número de marchas",
                                                                 "Número de carburadores"))
+
+
+
+
 #   a.1. Avaliando NAs
 #   Conclusão: nenhum NA identificado
   table(map(mtcars, is.na))

@@ -1,0 +1,123 @@
+---
+title: "Your Document Title"
+author: "Document Author"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(broom)
+library(janitor)
+library(MASS)
+library(GGally)
+library(car)
+library(ISLR)
+library(modelsummary)
+library(skimr)
+library(glue)
+library(patchwork)
+f <- glue
+```
+
+# Dados: palmerpenguins
+
+```{r}
+# install.packages("palmerpenguins")
+library(palmerpenguins)
+```
+
+```{r}
+skim(penguins)
+
+
+
+
+
+
+
+# resposta vs todas
+
+penguins |> 
+dplyr::select(where(is.numeric)) |> 
+  pivot_longer(-bill_length_mm) |>
+  ggplot(aes(x = value, y = bill_length_mm))+
+    geom_point()+ 
+    stat_smooth(se= F)+
+    facet_grid(~name, scales = "free")
+```
+
+```{r}
+penguins |> 
+dplyr::select(where(is.numeric), species) |> 
+  pivot_longer(c(-bill_length_mm, -species)) |>
+  ggplot(aes(x = value, y = bill_length_mm))+
+    geom_point(aes(color = species, group = species))+ 
+    stat_smooth(aes(group = species),se= F, method = "lm")+
+    facet_grid(~name, scales = "free")
+
+```
+
+```{r}
+penguins |> 
+  dplyr::select(where(is.factor), bill_length_mm) |> 
+  pivot_longer(-bill_length_mm) |> 
+  grup_by(name, value) |> 
+  summarise(
+    n = n(),
+    media = mean(bill_length_mm, na.rm = T))
+
+```
+
+```{r}
+#categoricas vs Y continuo
+penguins |> 
+  ggplot( aes(y=bill_length_mm, x = species))+
+  geom_boxplot()+
+  geom_jitter(alpha = 0.1) +
+  geom_boxplot(alpha = 0.1)
+```
+
+```{r}
+#categoricas vs Y continuo
+penguins |> 
+  dplyr::select(where(is.character), where (is.factor), bill_length_mm ) |> 
+  ggplot( aes( x = bill_length_mm, fill = sex))+
+  geom_histogram(alpha = 0.8)+
+  facet_wrap( ~sex, ncol= 1)
+  
+```
+
+```{r}
+#categoricas vs Y continuo
+penguins |> 
+  dplyr::select(where(is.character), where (is.factor), bill_length_mm ) |> 
+  ggplot( aes( x = bill_length_mm, fill = sex))+
+  geom_density(alpha = 0.8, adjust = 0.3)+
+  facet_wrap( ~sex, ncol= 1)
+  
+```
+
+```{r}
+#categoricas vs Y continuo
+penguins |> 
+  dplyr::select(where(is.character), where (is.factor), bill_length_mm ) |> 
+  pivot_longer(-bill_length_mm) |> 
+  ggplot( aes( y = bill_length_mm, x = value))+
+  geom_boxplot()+
+  facet_grid(~name, scales = "free")
+
+```
+
+
+
+
+
+
+
+
